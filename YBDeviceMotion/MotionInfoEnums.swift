@@ -67,9 +67,11 @@ internal enum DataTableSection {
     case userAcceleration
     /// Gravity value as returned by the `DeviceMotion` algorithms.
     case gravity
+    /// Distance travelled of the device, measured using deviceMotion data
+    case deviceDistance
     
     /// An `Array` of all sections in the order specified in the storyboard.
-    internal static let allSections = [userAcceleration, gravity, rotationRate, rawAccelerometerData, rawGyroData, rawMagnetometerData]
+    internal static let allSections = [deviceDistance, userAcceleration, gravity, rotationRate, rawAccelerometerData, rawGyroData, rawMagnetometerData]
     
     /// `Int` index of the section in `UITableView`.
     internal var index: Int {
@@ -105,5 +107,9 @@ internal enum DataTableRow: Int {
 
 }
 
-
+internal struct Distance {
+    let x : Double
+    let y : Double
+    let z : Double
+}
 

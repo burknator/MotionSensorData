@@ -20,6 +20,7 @@ final class MotionInfoViewController: UITableViewController {
         startGyroUpdates()
         startMagnetometerUpdates()
         startDeviceMotionUpdates()
+        startDeviceDistanceUpdates()
     }
     
     /// CoreMotion manager instance we receive updates from.
@@ -81,6 +82,35 @@ final class MotionInfoViewController: UITableViewController {
         }
     }
 
+    fileprivate func startDeviceDistanceUpdates() {
+        if motionManager.isDeviceMotionAvailable {
+            motionManager.deviceMotionUpdateInterval = 0.1
+            var dx = 0.0
+            var dy = 0.0
+            var dz = 0.0
+            var vx = 0.0
+            var vy = 0.0
+            var vz = 0.0
+            motionManager.startDeviceMotionUpdates(to: OperationQueue.main) { (deviceMotion, error) in
+                let ax = deviceMotion!.userAcceleration.x
+                let ay = deviceMotion!.userAcceleration.y
+                let az = deviceMotion!.userAcceleration.z
+                
+                vx = vx + ax
+                vy = vy + ay
+                vz = vz + az
+                
+                dx = dx + vx
+                dy = dy + vy
+                dz = dz + vz
+                
+                let distance = Distance(x: dx, y: dy, z: dz)
+                
+                self.report(distance: distance, inSection: .deviceDistance)
+            }
+        }
+    }
+    
     /**
      Logs an error in a consistent format.
      

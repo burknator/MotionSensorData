@@ -45,6 +45,14 @@ extension MotionInfoViewController {
         display(value: acceleration?.z, forRow: .axisZ, inSection: section, units: units, maxValue: 3)
     }
     
+    internal func report(distance: Distance, inSection section: DataTableSection) {
+        let units = "X"
+        
+        display(value: distance.x, forRow: .axisX, inSection: section, units: units, maxValue: 999)
+        display(value: distance.y, forRow: .axisY, inSection: section, units: units, maxValue: 999)
+        display(value: distance.z, forRow: .axisZ, inSection: section, units: units, maxValue: 999)
+    }
+    
     /**
      Sets magnetic field data values to a specified `DataTableSection`.
      

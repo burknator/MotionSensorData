@@ -20,7 +20,6 @@ final class MotionInfoViewController: UITableViewController {
         startGyroUpdates()
         startMagnetometerUpdates()
         startDeviceMotionUpdates()
-        startDeviceDistanceUpdates()
     }
     
     /// CoreMotion manager instance we receive updates from.
@@ -71,46 +70,56 @@ final class MotionInfoViewController: UITableViewController {
      *  Configure the Device Motion algorithm data callback.
      */
     fileprivate func startDeviceMotionUpdates() {
-        if motionManager.isDeviceMotionAvailable {
-            motionManager.deviceMotionUpdateInterval = 0.1
-            motionManager.startDeviceMotionUpdates(to: OperationQueue.main) { (deviceMotion, error) in
+        if !motionManager.isDeviceMotionAvailable { return }
+
+        motionManager.deviceMotionUpdateInterval = 0.1
+        
+        var d = Vector(0.0)
+        var v = Vector(0.0)
+        var calibration : Vector!
+        var previousA : Vector?
+        
+        motionManager.startDeviceMotionUpdates(to: OperationQueue.main) { (deviceMotion, error) in
+            defer {
+                self.report(distance: Distance(d.x, d.y, d.z), inSection: .deviceDistance)
                 self.report(acceleration: deviceMotion?.gravity, inSection: .gravity)
                 self.report(acceleration: deviceMotion?.userAcceleration, inSection: .userAcceleration)
                 self.report(rotationRate: deviceMotion?.rotationRate, inSection: .rotationRate)
                 self.log(error: error, forSensor: .deviceMotion)
             }
-        }
-    }
-
-    fileprivate func startDeviceDistanceUpdates() {
-        if motionManager.isDeviceMotionAvailable {
-            motionManager.deviceMotionUpdateInterval = 0.1
-            var dx = 0.0
-            var dy = 0.0
-            var dz = 0.0
-            var vx = 0.0
-            var vy = 0.0
-            var vz = 0.0
-            motionManager.startDeviceMotionUpdates(to: OperationQueue.main) { (deviceMotion, error) in
-                let ax = deviceMotion!.userAcceleration.x
-                let ay = deviceMotion!.userAcceleration.y
-                let az = deviceMotion!.userAcceleration.z
-                
-                vx = vx + ax
-                vy = vy + ay
-                vz = vz + az
-                
-                dx = dx + vx
-                dy = dy + vy
-                dz = dz + vz
-                
-                let distance = Distance(x: dx, y: dy, z: dz)
-                
-                self.report(distance: distance, inSection: .deviceDistance)
+            
+            // Ab hier muss eigentlich alles fuer jede x, y und z Variable gemacht werden
+            var a = Vector(deviceMotion!.userAcceleration)
+            
+            if let prev = previousA, a.rounded(decimals: 3) == prev.rounded(decimals: 3) {
+                return
+            }
+            
+            previousA = a
+            
+            a.round()
+            
+            if calibration == nil {
+                calibration = -a
+            }
+            
+            if a.x + calibration.x != 0.0 {
+                v.x = v.x + a.x + calibration.x
+                d.x = d.x + v.x
+            }
+            
+            if a.y + calibration.y != 0.0 {
+                v.y = v.y + a.y + calibration.y
+                d.y = d.y + v.y
+            }
+            
+            if a.z + calibration.z != 0.0 {
+                v.z = v.z + a.z + calibration.z
+                d.z = d.z + v.z
             }
         }
     }
-    
+
     /**
      Logs an error in a consistent format.
      

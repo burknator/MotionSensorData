@@ -7,6 +7,7 @@
 //
 
 import UIKit
+import CoreMotion
 
 /**
  Device sensors available on an iOS device.
@@ -111,5 +112,72 @@ internal struct Distance {
     let x : Double
     let y : Double
     let z : Double
+    
+    init(_ x : Double, _ y : Double, _ z : Double) {
+        self.x = x
+        self.y = y
+        self.z = z
+    }
+}
+
+internal struct Vector {
+    var x : Double
+    var y : Double
+    var z : Double
+    
+    init(_ x : Double, _ y : Double, _ z : Double) {
+        self.x = x
+        self.y = y
+        self.z = z
+    }
+    
+    init(_ acceleration : CMAcceleration) {
+        self.init(acceleration.x, acceleration.y, acceleration.z)
+    }
+    
+    init(_ all : Double) {
+        self.init(all, all, all)
+    }
+}
+
+extension Vector {
+    static func +(lhs : Vector, rhs : Vector) -> Vector {
+        return Vector(lhs.x + rhs.x, lhs.y + rhs.y, lhs.z + rhs.z)
+    }
+    
+    static prefix func -(vector: Vector) -> Vector {
+        return Vector(-vector.x, -vector.y, -vector.z)
+    }
+    
+    static func +=(left: inout Vector, right: Vector) {
+        left = left + right
+    }
+    
+    static func ==(lhs : Vector, rhs : Double) -> Bool {
+        return lhs.x == rhs && lhs.y == rhs && lhs.z == rhs
+    }
+    
+    static func ==(lhs : Vector, rhs : Vector) -> Bool {
+        return lhs.x == rhs.x && lhs.y == rhs.y && lhs.z == rhs.z
+    }
+    
+    static func !=(lhs : Vector, rhs : Double) -> Bool {
+        return !(lhs == rhs)
+    }
+    
+    mutating func round(decimals : Int = 1) -> Void {
+        let fac = Double(truncating:pow(10.0, decimals) as NSNumber)
+        self.x = (self.x * fac).rounded() / fac
+        self.y = (self.y * fac).rounded() / fac
+        self.z = (self.z * fac).rounded() / fac
+    }
+    
+    func rounded(decimals : Int = 1) -> Vector {
+        var copy = self
+        
+        copy.round(decimals: decimals)
+        
+        return copy
+    }
 }
 

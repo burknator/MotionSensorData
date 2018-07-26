@@ -8,6 +8,7 @@
 
 import UIKit
 import CoreMotion
+import SwiftyZeroMQ
 
 /// A `UIViewController` class that displays data from the motion sensors available on the device.
 final class MotionInfoViewController: UITableViewController {
@@ -117,6 +118,19 @@ final class MotionInfoViewController: UITableViewController {
                 v.z = v.z + a.z + calibration.z
                 d.z = d.z + v.z
             }
+
+            do {
+                // TODO Send data into backbone
+                let endpoint = "tcp://127.0.0.1:5555"
+                let context = try SwiftyZeroMQ.Context()
+                let publisher = try context.socket(.publish)
+
+                try publisher.bind(endpoint)
+                try publisher.send(string: "Ich bin ein Test")
+            } catch {
+                
+            }
+
         }
     }
 

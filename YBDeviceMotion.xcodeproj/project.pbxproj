@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		CD5B9CAB210A078C00DCD5B2 /* SwiftyZeroMQ.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CD5B9C9E210A078200DCD5B2 /* SwiftyZeroMQ.framework */; };
+		CD5B9CAC210A078C00DCD5B2 /* SwiftyZeroMQ.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = CD5B9C9E210A078200DCD5B2 /* SwiftyZeroMQ.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		FA9E506B1CB501AF0012BC77 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA9E506A1CB501AF0012BC77 /* AppDelegate.swift */; };
 		FA9E506D1CB501AF0012BC77 /* MotionInfoViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA9E506C1CB501AF0012BC77 /* MotionInfoViewController.swift */; };
 		FA9E50701CB501AF0012BC77 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FA9E506E1CB501AF0012BC77 /* Main.storyboard */; };
@@ -16,7 +18,81 @@
 		FA9E507F1CB54ED30012BC77 /* MotionInfoViewController+SettingData.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA9E507E1CB54ED30012BC77 /* MotionInfoViewController+SettingData.swift */; };
 /* End PBXBuildFile section */
 
+/* Begin PBXContainerItemProxy section */
+		CD5B9C9D210A078200DCD5B2 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = CD5B9C93210A078200DCD5B2 /* SwiftyZeroMQ.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 04D84E331DB637E800AD9652;
+			remoteInfo = "SwiftyZeroMQ-iOS";
+		};
+		CD5B9C9F210A078200DCD5B2 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = CD5B9C93210A078200DCD5B2 /* SwiftyZeroMQ.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 04D84E3C1DB637E800AD9652;
+			remoteInfo = "SwiftyZeroMQ-iOS Tests";
+		};
+		CD5B9CA1210A078200DCD5B2 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = CD5B9C93210A078200DCD5B2 /* SwiftyZeroMQ.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 04AA85E01DC9EF0E0026AE5E;
+			remoteInfo = "SwiftyZeroMQ-macOS";
+		};
+		CD5B9CA3210A078200DCD5B2 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = CD5B9C93210A078200DCD5B2 /* SwiftyZeroMQ.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 04AA85E81DC9EF0E0026AE5E;
+			remoteInfo = "SwiftyZeroMQ-macOSTests";
+		};
+		CD5B9CA5210A078200DCD5B2 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = CD5B9C93210A078200DCD5B2 /* SwiftyZeroMQ.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 04AA857F1DC9E5770026AE5E;
+			remoteInfo = "SwiftyZeroMQ-tvOS";
+		};
+		CD5B9CA7210A078200DCD5B2 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = CD5B9C93210A078200DCD5B2 /* SwiftyZeroMQ.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 04AA85871DC9E5780026AE5E;
+			remoteInfo = "SwiftyZeroMQ-tvOSTests";
+		};
+		CD5B9CA9210A078200DCD5B2 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = CD5B9C93210A078200DCD5B2 /* SwiftyZeroMQ.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 04AA85651DC9E1390026AE5E;
+			remoteInfo = "SwiftyZeroMQ-watchOS";
+		};
+		CD5B9CAD210A078C00DCD5B2 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = CD5B9C93210A078200DCD5B2 /* SwiftyZeroMQ.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = 04D84E321DB637E800AD9652;
+			remoteInfo = "SwiftyZeroMQ-iOS";
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		CD5B9CAF210A078C00DCD5B2 /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				CD5B9CAC210A078C00DCD5B2 /* SwiftyZeroMQ.framework in Embed Frameworks */,
+			);
+			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
+		CD5B9C93210A078200DCD5B2 /* SwiftyZeroMQ.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = SwiftyZeroMQ.xcodeproj; path = "../../../Downloads/SwiftyZeroMQ-1.0.25/SwiftyZeroMQ.xcodeproj"; sourceTree = "<group>"; };
 		FA9E50671CB501AF0012BC77 /* YBDeviceMotion.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = YBDeviceMotion.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		FA9E506A1CB501AF0012BC77 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		FA9E506C1CB501AF0012BC77 /* MotionInfoViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MotionInfoViewController.swift; sourceTree = "<group>"; };
@@ -33,17 +109,33 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				CD5B9CAB210A078C00DCD5B2 /* SwiftyZeroMQ.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		CD5B9C94210A078200DCD5B2 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				CD5B9C9E210A078200DCD5B2 /* SwiftyZeroMQ.framework */,
+				CD5B9CA0210A078200DCD5B2 /* SwiftyZeroMQ-iOS Tests.xctest */,
+				CD5B9CA2210A078200DCD5B2 /* SwiftyZeroMQ.framework */,
+				CD5B9CA4210A078200DCD5B2 /* SwiftyZeroMQ-macOSTests.xctest */,
+				CD5B9CA6210A078200DCD5B2 /* SwiftyZeroMQ.framework */,
+				CD5B9CA8210A078200DCD5B2 /* SwiftyZeroMQ-tvOSTests.xctest */,
+				CD5B9CAA210A078200DCD5B2 /* SwiftyZeroMQ.framework */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
 		FA9E505E1CB501AF0012BC77 = {
 			isa = PBXGroup;
 			children = (
 				FA9E50691CB501AF0012BC77 /* YBDeviceMotion */,
 				FA9E50681CB501AF0012BC77 /* Products */,
+				CD5B9C93210A078200DCD5B2 /* SwiftyZeroMQ.xcodeproj */,
 			);
 			sourceTree = "<group>";
 		};
@@ -80,10 +172,12 @@
 				FA9E50631CB501AF0012BC77 /* Sources */,
 				FA9E50641CB501AF0012BC77 /* Frameworks */,
 				FA9E50651CB501AF0012BC77 /* Resources */,
+				CD5B9CAF210A078C00DCD5B2 /* Embed Frameworks */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				CD5B9CAE210A078C00DCD5B2 /* PBXTargetDependency */,
 			);
 			name = YBDeviceMotion;
 			productName = YBDeviceMotion;
@@ -103,7 +197,7 @@
 					FA9E50661CB501AF0012BC77 = {
 						CreatedOnToolsVersion = 7.3;
 						DevelopmentTeam = DH2L8TP4RW;
-						LastSwiftMigration = 0800;
+						LastSwiftMigration = 0940;
 					};
 				};
 			};
@@ -118,12 +212,70 @@
 			mainGroup = FA9E505E1CB501AF0012BC77;
 			productRefGroup = FA9E50681CB501AF0012BC77 /* Products */;
 			projectDirPath = "";
+			projectReferences = (
+				{
+					ProductGroup = CD5B9C94210A078200DCD5B2 /* Products */;
+					ProjectRef = CD5B9C93210A078200DCD5B2 /* SwiftyZeroMQ.xcodeproj */;
+				},
+			);
 			projectRoot = "";
 			targets = (
 				FA9E50661CB501AF0012BC77 /* YBDeviceMotion */,
 			);
 		};
 /* End PBXProject section */
+
+/* Begin PBXReferenceProxy section */
+		CD5B9C9E210A078200DCD5B2 /* SwiftyZeroMQ.framework */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.framework;
+			path = SwiftyZeroMQ.framework;
+			remoteRef = CD5B9C9D210A078200DCD5B2 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		CD5B9CA0210A078200DCD5B2 /* SwiftyZeroMQ-iOS Tests.xctest */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.cfbundle;
+			path = "SwiftyZeroMQ-iOS Tests.xctest";
+			remoteRef = CD5B9C9F210A078200DCD5B2 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		CD5B9CA2210A078200DCD5B2 /* SwiftyZeroMQ.framework */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.framework;
+			path = SwiftyZeroMQ.framework;
+			remoteRef = CD5B9CA1210A078200DCD5B2 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		CD5B9CA4210A078200DCD5B2 /* SwiftyZeroMQ-macOSTests.xctest */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.cfbundle;
+			path = "SwiftyZeroMQ-macOSTests.xctest";
+			remoteRef = CD5B9CA3210A078200DCD5B2 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		CD5B9CA6210A078200DCD5B2 /* SwiftyZeroMQ.framework */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.framework;
+			path = SwiftyZeroMQ.framework;
+			remoteRef = CD5B9CA5210A078200DCD5B2 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		CD5B9CA8210A078200DCD5B2 /* SwiftyZeroMQ-tvOSTests.xctest */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.cfbundle;
+			path = "SwiftyZeroMQ-tvOSTests.xctest";
+			remoteRef = CD5B9CA7210A078200DCD5B2 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		CD5B9CAA210A078200DCD5B2 /* SwiftyZeroMQ.framework */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.framework;
+			path = SwiftyZeroMQ.framework;
+			remoteRef = CD5B9CA9210A078200DCD5B2 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+/* End PBXReferenceProxy section */
 
 /* Begin PBXResourcesBuildPhase section */
 		FA9E50651CB501AF0012BC77 /* Resources */ = {
@@ -151,6 +303,14 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		CD5B9CAE210A078C00DCD5B2 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = "SwiftyZeroMQ-iOS";
+			targetProxy = CD5B9CAD210A078C00DCD5B2 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin PBXVariantGroup section */
 		FA9E506E1CB501AF0012BC77 /* Main.storyboard */ = {
@@ -265,26 +425,30 @@
 		FA9E507A1CB501AF0012BC77 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				DEVELOPMENT_TEAM = DH2L8TP4RW;
 				INFOPLIST_FILE = YBDeviceMotion/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = de.pburke.DeviceMotion;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_VERSION = 3.0;
+				SWIFT_SWIFT3_OBJC_INFERENCE = On;
+				SWIFT_VERSION = 4.0;
 			};
 			name = Debug;
 		};
 		FA9E507B1CB501AF0012BC77 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				DEVELOPMENT_TEAM = DH2L8TP4RW;
 				INFOPLIST_FILE = YBDeviceMotion/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = de.pburke.DeviceMotion;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_VERSION = 3.0;
+				SWIFT_SWIFT3_OBJC_INFERENCE = On;
+				SWIFT_VERSION = 4.0;
 			};
 			name = Release;
 		};

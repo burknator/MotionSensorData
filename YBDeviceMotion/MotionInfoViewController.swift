@@ -12,10 +12,34 @@ import SwiftyZeroMQ
 
 /// A `UIViewController` class that displays data from the motion sensors available on the device.
 final class MotionInfoViewController: UITableViewController {
+
+    var publisher : SwiftyZeroMQ.Socket?
+    var context : SwiftyZeroMQ.Context?
     
     override internal func viewDidLoad() {
         super.viewDidLoad()
-        
+
+        do {
+            let endpoint = "tcp://10.18.0.17:50020"
+            self.context = try SwiftyZeroMQ.Context()
+
+            if let context = self.context {
+                let requester = try context.socket(.request)
+                try requester.connect(endpoint)
+                try requester.send(string: "PUB_PORT")
+
+                let pub_port = try requester.recv()!
+                let publisher_endpoint = "tcp://10.18.0.17:\(pub_port)"
+
+                self.publisher = try context.socket(.publish)
+                if let publisher = self.publisher {
+                    try publisher.connect(publisher_endpoint)
+                }
+            }
+        } catch let error {
+            error.localizedDescription
+        }
+
         // Initiate the `CoreMotion` updates to our callbacks.
         startAccelerometerUpdates()
         startGyroUpdates()
@@ -120,17 +144,13 @@ final class MotionInfoViewController: UITableViewController {
             }
 
             do {
-                // TODO Send data into backbone
-                let endpoint = "tcp://127.0.0.1:5555"
-                let context = try SwiftyZeroMQ.Context()
-                let publisher = try context.socket(.publish)
-
-                try publisher.bind(endpoint)
-                try publisher.send(string: "Ich bin ein Test")
-            } catch {
-                
+                if let publisher = self.publisher {
+                    try publisher.send(string: "notify.start_plugin", options: .sendMore)
+                    try publisher.send(string: "VALUE")
+                }
+            } catch let error {
+                error.localizedDescription
             }
-
         }
     }
 

@@ -8,6 +8,7 @@
 
 import UIKit
 import CoreMotion
+import MessagePack
 
 /**
  Device sensors available on an iOS device.
@@ -108,18 +109,6 @@ internal enum DataTableRow: Int {
 
 }
 
-internal struct Distance {
-    let x : Double
-    let y : Double
-    let z : Double
-    
-    init(_ x : Double, _ y : Double, _ z : Double) {
-        self.x = x
-        self.y = y
-        self.z = z
-    }
-}
-
 internal struct Vector {
     var x : Double
     var y : Double
@@ -179,5 +168,27 @@ extension Vector {
         
         return copy
     }
+
+    func msgpackValue(_ confidence : Double) -> MessagePackValue {
+        return MessagePackValue([
+            "confidence": MessagePackValue(confidence),
+            "timestamp": MessagePackValue(Timestamp),
+            "distance": [
+                MessagePackValue(self.x),
+                MessagePackValue(self.y),
+                MessagePackValue(self.z)
+            ]
+        ])
+    }
 }
 
+typealias Distance = Vector
+
+fileprivate var Timestamp: String {
+    return "\(NSDate().timeIntervalSince1970 * 1000)"
+}
+
+enum Hand : String {
+    case right
+    case left
+}

@@ -9,35 +9,40 @@
 import UIKit
 import CoreMotion
 import SwiftyZeroMQ
+import MessagePack
 
 /// A `UIViewController` class that displays data from the motion sensors available on the device.
 final class MotionInfoViewController: UITableViewController {
 
     var publisher : SwiftyZeroMQ.Socket?
     var context : SwiftyZeroMQ.Context?
-    
+    var confidence = 1.0
+    // TODO Make this configurable via UI
+    var side : Hand = .right
+
     override internal func viewDidLoad() {
         super.viewDidLoad()
 
+        // TODO Make this configurable via UI
+        let ip = "10.17.4.198"
+
         do {
-            let endpoint = "tcp://10.18.0.17:50020"
+            let endpoint = "tcp://\(ip):50020"
             self.context = try SwiftyZeroMQ.Context()
 
-            if let context = self.context {
-                let requester = try context.socket(.request)
-                try requester.connect(endpoint)
-                try requester.send(string: "PUB_PORT")
+            let requester = try context?.socket(.request)
+            try requester?.connect(endpoint)
+            try requester?.send(string: "PUB_PORT")
 
-                let pub_port = try requester.recv()!
-                let publisher_endpoint = "tcp://10.18.0.17:\(pub_port)"
+            let pub_port = try requester?.recv()
+            let publisher_endpoint = "tcp://\(ip):\(pub_port!)"
 
-                self.publisher = try context.socket(.publish)
-                if let publisher = self.publisher {
-                    try publisher.connect(publisher_endpoint)
-                }
-            }
+            self.publisher = try context?.socket(.publish)
+            try self.publisher?.setSendHighWaterMark(0)
+
+            try self.publisher?.connect(publisher_endpoint)
         } catch let error {
-            error.localizedDescription
+            print(error.localizedDescription)
         }
 
         // Initiate the `CoreMotion` updates to our callbacks.
@@ -95,62 +100,67 @@ final class MotionInfoViewController: UITableViewController {
      *  Configure the Device Motion algorithm data callback.
      */
     fileprivate func startDeviceMotionUpdates() {
-        if !motionManager.isDeviceMotionAvailable { return }
+        guard motionManager.isDeviceMotionAvailable else { return }
 
-        motionManager.deviceMotionUpdateInterval = 0.1
+        motionManager.deviceMotionUpdateInterval = 1.0 / 60.0
         
-        var d = Vector(0.0)
-        var v = Vector(0.0)
+        var distance = Distance(0.0)
+        var velocity = Vector(0.0)
         var calibration : Vector!
         var previousA : Vector?
-        
+
         motionManager.startDeviceMotionUpdates(to: OperationQueue.main) { (deviceMotion, error) in
             defer {
-                self.report(distance: Distance(d.x, d.y, d.z), inSection: .deviceDistance)
+                self.report(distance: distance, inSection: .deviceDistance)
                 self.report(acceleration: deviceMotion?.gravity, inSection: .gravity)
                 self.report(acceleration: deviceMotion?.userAcceleration, inSection: .userAcceleration)
                 self.report(rotationRate: deviceMotion?.rotationRate, inSection: .rotationRate)
                 self.log(error: error, forSensor: .deviceMotion)
             }
+
+            // TODO This is linear now (and dummy too), but it has to be quadratic
+            if self.confidence - 0.001 < 0 {
+                self.confidence = 0
+            } else {
+                self.confidence -= 0.001
+            }
             
-            // Ab hier muss eigentlich alles fuer jede x, y und z Variable gemacht werden
-            var a = Vector(deviceMotion!.userAcceleration)
+            var acceleration = Vector(deviceMotion!.userAcceleration)
             
-            if let prev = previousA, a.rounded(decimals: 3) == prev.rounded(decimals: 3) {
+            if let previousA = previousA, acceleration.rounded(decimals: 10) == previousA.rounded(decimals: 10) {
                 return
             }
             
-            previousA = a
+            previousA = acceleration
             
-            a.round()
+            acceleration.round()
             
             if calibration == nil {
-                calibration = -a
-            }
-            
-            if a.x + calibration.x != 0.0 {
-                v.x = v.x + a.x + calibration.x
-                d.x = d.x + v.x
-            }
-            
-            if a.y + calibration.y != 0.0 {
-                v.y = v.y + a.y + calibration.y
-                d.y = d.y + v.y
-            }
-            
-            if a.z + calibration.z != 0.0 {
-                v.z = v.z + a.z + calibration.z
-                d.z = d.z + v.z
+                calibration = -acceleration
             }
 
-            do {
-                if let publisher = self.publisher {
-                    try publisher.send(string: "notify.start_plugin", options: .sendMore)
-                    try publisher.send(string: "VALUE")
-                }
-            } catch let error {
-                error.localizedDescription
+            acceleration += calibration
+
+            if acceleration.x != 0.0 {
+                velocity.x = velocity.x + acceleration.x
+                distance.x = distance.x + velocity.x
             }
+            
+            if acceleration.y != 0.0 {
+                velocity.y = velocity.y + acceleration.y
+                distance.y = distance.y + velocity.y
+            }
+            
+            if acceleration.z != 0.0 {
+                velocity.z = velocity.z + acceleration.z
+                distance.z = distance.z + velocity.z
+            }
+
+            let msgData = distance.msgpackValue(self.confidence)
+            let data = pack(msgData)
+
+            try! self.publisher?.send(string: "han2.\(self.side)", options: .sendMore)
+            try! self.publisher?.send(data: data)
         }
     }
 
@@ -167,4 +177,3 @@ final class MotionInfoViewController: UITableViewController {
     }
 
 }
-

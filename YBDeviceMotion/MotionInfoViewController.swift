@@ -14,14 +14,18 @@ import MessagePack
 /// A `UIViewController` class that displays data from the motion sensors available on the device.
 final class MotionInfoViewController: UITableViewController {
 
-    var publisher : SwiftyZeroMQ.Socket?
-    var context : SwiftyZeroMQ.Context?
-    var confidence = 1.0
+    var publishingTopic = "han2"
     // TODO Make this configurable via UI
-    var side : Hand = .right
+    var side : Hand = .left
     // TODO Make this configurable via UI
     let ip = "10.18.0.46"
     //let ip = "192.168.2.101"
+
+    var resetError = false
+    var publisher : SwiftyZeroMQ.Socket?
+    var subscriber : SwiftyZeroMQ.Socket?
+    var context : SwiftyZeroMQ.Context?
+    var confidence = 1.0
 
     override internal func viewDidLoad() {
         super.viewDidLoad()
@@ -32,15 +36,30 @@ final class MotionInfoViewController: UITableViewController {
 
             let requester = try context?.socket(.request)
             try requester?.connect(endpoint)
-            try requester?.send(string: "PUB_PORT")
 
+            try requester?.send(string: "PUB_PORT")
             let pub_port = try requester?.recv()
             let publisher_endpoint = "tcp://\(ip):\(pub_port!)"
 
+            try requester?.send(string: "SUB_PORT")
+            let sub_port = try requester?.recv()
+            let subscriber_endpoint = "tcp://\(ip):\(sub_port!)"
+
             self.publisher = try context?.socket(.publish)
             try self.publisher?.setSendHighWaterMark(0)
-
             try self.publisher?.connect(publisher_endpoint)
+
+            self.subscriber = try context?.socket(.subscribe)
+            try self.subscriber?.connect(subscriber_endpoint)
+            try self.subscriber?.setSubscribe("han1")
+
+            DispatchQueue.global(qos: .userInitiated).async { [unowned self] in
+                while true {
+                    if let _ = try! self.subscriber?.recvMultipart() {
+                        self.resetError = true
+                    }
+                }
+            }
         } catch let error {
             print(error.localizedDescription)
         }
@@ -63,7 +82,7 @@ final class MotionInfoViewController: UITableViewController {
         var distance = Distance(0.0)
         var velocity = Vector(0.0)
         var calibration : Vector!
-        var previousA : Vector?
+        var previousAcceleration : Vector?
 
         motionManager.startDeviceMotionUpdates(to: OperationQueue.main) { (deviceMotion, error) in
             defer {
@@ -74,20 +93,22 @@ final class MotionInfoViewController: UITableViewController {
                 self.log(error: error, forSensor: .deviceMotion)
             }
 
-            // TODO This is linear now (and dummy too), but it has to be quadratic
-            if self.confidence - 0.001 < 0 {
-                self.confidence = 0
-            } else {
-                self.confidence -= 0.001
+            if self.resetError {
+                self.confidence = 1.0
+                distance = Distance(0.0)
+                velocity = Vector(0.0)
+                previousAcceleration = nil
+                self.resetError = false
             }
 
             var acceleration = Vector(deviceMotion!.userAcceleration)
 
-            if let previousA = previousA, acceleration.rounded(decimals: 10) == previousA.rounded(decimals: 10) {
+            if let previousA = previousAcceleration,
+                acceleration.rounded(decimals: 10) == previousA.rounded(decimals: 10) {
                 return
             }
 
-            previousA = acceleration
+            previousAcceleration = acceleration
 
             acceleration.round()
 
@@ -112,11 +133,24 @@ final class MotionInfoViewController: UITableViewController {
                 distance.z = distance.z + velocity.z
             }
 
-            let msgData = distance.msgpackValue(self.confidence)
-            let data = pack(msgData)
+            self.publish(distance: distance)
+        }
+    }
 
-            try! self.publisher?.send(string: "han2.\(self.side)", options: .sendMore)
-            try! self.publisher?.send(data: data)
+    fileprivate func publish(distance : Distance) {
+        guard let publisher = self.publisher else { return }
+
+        let msgData = distance.msgpackValue(self.confidence)
+        let data = pack(msgData)
+
+        try! publisher.send(string: "\(self.publishingTopic).\(self.side)", options: .sendMore)
+        try! publisher.send(data: data)
+
+        // TODO This is linear now (and dummy too), but it has to be quadratic
+        if self.confidence - 0.001 < 0 {
+            self.confidence = 0
+        } else {
+            self.confidence -= 0.001
         }
     }
     

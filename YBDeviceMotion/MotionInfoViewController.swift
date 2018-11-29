@@ -19,12 +19,12 @@ final class MotionInfoViewController: UITableViewController {
     var confidence = 1.0
     // TODO Make this configurable via UI
     var side : Hand = .right
+    // TODO Make this configurable via UI
+    let ip = "10.18.0.46"
+    //let ip = "192.168.2.101"
 
     override internal func viewDidLoad() {
         super.viewDidLoad()
-
-        // TODO Make this configurable via UI
-        let ip = "10.17.4.198"
 
         do {
             let endpoint = "tcp://\(ip):50020"
@@ -50,6 +50,74 @@ final class MotionInfoViewController: UITableViewController {
         startGyroUpdates()
         startMagnetometerUpdates()
         startDeviceMotionUpdates()
+    }
+
+    /**
+     *  Configure the Device Motion algorithm data callback.
+     */
+    fileprivate func startDeviceMotionUpdates() {
+        guard motionManager.isDeviceMotionAvailable else { return }
+
+        motionManager.deviceMotionUpdateInterval = 1.0 / 60.0
+
+        var distance = Distance(0.0)
+        var velocity = Vector(0.0)
+        var calibration : Vector!
+        var previousA : Vector?
+
+        motionManager.startDeviceMotionUpdates(to: OperationQueue.main) { (deviceMotion, error) in
+            defer {
+                self.report(distance: distance, inSection: .deviceDistance)
+                self.report(acceleration: deviceMotion?.gravity, inSection: .gravity)
+                self.report(acceleration: deviceMotion?.userAcceleration, inSection: .userAcceleration)
+                self.report(rotationRate: deviceMotion?.rotationRate, inSection: .rotationRate)
+                self.log(error: error, forSensor: .deviceMotion)
+            }
+
+            // TODO This is linear now (and dummy too), but it has to be quadratic
+            if self.confidence - 0.001 < 0 {
+                self.confidence = 0
+            } else {
+                self.confidence -= 0.001
+            }
+
+            var acceleration = Vector(deviceMotion!.userAcceleration)
+
+            if let previousA = previousA, acceleration.rounded(decimals: 10) == previousA.rounded(decimals: 10) {
+                return
+            }
+
+            previousA = acceleration
+
+            acceleration.round()
+
+            if calibration == nil {
+                calibration = -acceleration
+            }
+
+            acceleration += calibration
+
+            if acceleration.x != 0.0 {
+                velocity.x = velocity.x + acceleration.x
+                distance.x = distance.x + velocity.x
+            }
+
+            if acceleration.y != 0.0 {
+                velocity.y = velocity.y + acceleration.y
+                distance.y = distance.y + velocity.y
+            }
+
+            if acceleration.z != 0.0 {
+                velocity.z = velocity.z + acceleration.z
+                distance.z = distance.z + velocity.z
+            }
+
+            let msgData = distance.msgpackValue(self.confidence)
+            let data = pack(msgData)
+
+            try! self.publisher?.send(string: "han2.\(self.side)", options: .sendMore)
+            try! self.publisher?.send(data: data)
+        }
     }
     
     /// CoreMotion manager instance we receive updates from.
@@ -93,74 +161,6 @@ final class MotionInfoViewController: UITableViewController {
                 self.report(magneticField: magnetometerData?.magneticField, inSection: .rawMagnetometerData)
                 self.log(error: error, forSensor: .magnetometer)
             }
-        }
-    }
-    
-    /**
-     *  Configure the Device Motion algorithm data callback.
-     */
-    fileprivate func startDeviceMotionUpdates() {
-        guard motionManager.isDeviceMotionAvailable else { return }
-
-        motionManager.deviceMotionUpdateInterval = 1.0 / 60.0
-        
-        var distance = Distance(0.0)
-        var velocity = Vector(0.0)
-        var calibration : Vector!
-        var previousA : Vector?
-
-        motionManager.startDeviceMotionUpdates(to: OperationQueue.main) { (deviceMotion, error) in
-            defer {
-                self.report(distance: distance, inSection: .deviceDistance)
-                self.report(acceleration: deviceMotion?.gravity, inSection: .gravity)
-                self.report(acceleration: deviceMotion?.userAcceleration, inSection: .userAcceleration)
-                self.report(rotationRate: deviceMotion?.rotationRate, inSection: .rotationRate)
-                self.log(error: error, forSensor: .deviceMotion)
-            }
-
-            // TODO This is linear now (and dummy too), but it has to be quadratic
-            if self.confidence - 0.001 < 0 {
-                self.confidence = 0
-            } else {
-                self.confidence -= 0.001
-            }
-            
-            var acceleration = Vector(deviceMotion!.userAcceleration)
-            
-            if let previousA = previousA, acceleration.rounded(decimals: 10) == previousA.rounded(decimals: 10) {
-                return
-            }
-            
-            previousA = acceleration
-            
-            acceleration.round()
-            
-            if calibration == nil {
-                calibration = -acceleration
-            }
-
-            acceleration += calibration
-
-            if acceleration.x != 0.0 {
-                velocity.x = velocity.x + acceleration.x
-                distance.x = distance.x + velocity.x
-            }
-            
-            if acceleration.y != 0.0 {
-                velocity.y = velocity.y + acceleration.y
-                distance.y = distance.y + velocity.y
-            }
-            
-            if acceleration.z != 0.0 {
-                velocity.z = velocity.z + acceleration.z
-                distance.z = distance.z + velocity.z
-            }
-
-            let msgData = distance.msgpackValue(self.confidence)
-            let data = pack(msgData)
-
-            try! self.publisher?.send(string: "han2.\(self.side)", options: .sendMore)
-            try! self.publisher?.send(data: data)
         }
     }
 

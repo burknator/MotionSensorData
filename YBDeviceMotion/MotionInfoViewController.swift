@@ -14,18 +14,35 @@ import MessagePack
 /// A `UIViewController` class that displays data from the motion sensors available on the device.
 final class MotionInfoViewController: UITableViewController {
 
-    var publishingTopic = "han2"
-    // TODO Make this configurable via UI
-    var side : Hand = .left
-    // TODO Make this configurable via UI
-    let ip = "10.18.0.46"
-    //let ip = "192.168.2.101"
+    var leapDataTopic = "han1"
+    var accelerometerDataTopic = "han2"
 
-    var resetError = false
+    // TODO Make this configurable via UI
+    var side : Hand = .right
+    //let ip = "10.18.0.46"
+    let ip = "192.168.2.101"
+
+    fileprivate let resetErrorSynchronizer = DispatchQueue(label: "de.offis.cocomuni.reset-error-sync")
+    var resetError_Value = false
+    var resetError : Bool {
+        get {
+            return resetErrorSynchronizer.sync {
+                self.resetError_Value
+            }
+        }
+
+        set(newValue) {
+            resetErrorSynchronizer.sync {
+                self.resetError_Value = newValue
+            }
+        }
+    }
+
     var publisher : SwiftyZeroMQ.Socket?
-    var subscriber : SwiftyZeroMQ.Socket?
+    var leapSubscriber : SwiftyZeroMQ.Socket?
     var context : SwiftyZeroMQ.Context?
     var confidence = 1.0
+    var queue = DispatchQueue(label: "de.offis.cocomuni.leap-data-subscription", qos: .utility)
 
     override internal func viewDidLoad() {
         super.viewDidLoad()
@@ -49,14 +66,22 @@ final class MotionInfoViewController: UITableViewController {
             try self.publisher?.setSendHighWaterMark(0)
             try self.publisher?.connect(publisher_endpoint)
 
-            self.subscriber = try context?.socket(.subscribe)
-            try self.subscriber?.connect(subscriber_endpoint)
-            try self.subscriber?.setSubscribe("han1")
+            self.leapSubscriber = try context?.socket(.subscribe)
+            try self.leapSubscriber?.connect(subscriber_endpoint)
+            try self.leapSubscriber?.setSubscribe(self.leapDataTopic)
 
-            DispatchQueue.global(qos: .userInitiated).async { [unowned self] in
+            queue.async {
                 while true {
-                    if let _ = try! self.subscriber?.recvMultipart() {
-                        self.resetError = true
+                    guard let leapData = try! self.leapSubscriber?.recvMultipart() else { continue }
+
+                    for packedData in leapData {
+                        guard let data = try! unpack(packedData).value.dictionaryValue else { continue }
+
+                        for (element, value) in data {
+                            if element.stringValue == "side" && value.stringValue == self.side.rawValue {
+                                self.resetError = true
+                            }
+                        }
                     }
                 }
             }
@@ -93,19 +118,19 @@ final class MotionInfoViewController: UITableViewController {
                 self.log(error: error, forSensor: .deviceMotion)
             }
 
+            var acceleration = Vector(deviceMotion!.userAcceleration)
+
+            if let previousA = previousAcceleration,
+                acceleration.rounded(decimals: 10) == previousA.rounded(decimals: 10) {
+                return
+            }
+
             if self.resetError {
                 self.confidence = 1.0
                 distance = Distance(0.0)
                 velocity = Vector(0.0)
                 previousAcceleration = nil
                 self.resetError = false
-            }
-
-            var acceleration = Vector(deviceMotion!.userAcceleration)
-
-            if let previousA = previousAcceleration,
-                acceleration.rounded(decimals: 10) == previousA.rounded(decimals: 10) {
-                return
             }
 
             previousAcceleration = acceleration
@@ -143,7 +168,7 @@ final class MotionInfoViewController: UITableViewController {
         let msgData = distance.msgpackValue(self.confidence)
         let data = pack(msgData)
 
-        try! publisher.send(string: "\(self.publishingTopic).\(self.side)", options: .sendMore)
+        try! publisher.send(string: "\(self.accelerometerDataTopic).\(self.side)", options: .sendMore)
         try! publisher.send(data: data)
 
         // TODO This is linear now (and dummy too), but it has to be quadratic

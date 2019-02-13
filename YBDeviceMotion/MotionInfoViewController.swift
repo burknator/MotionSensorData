@@ -19,8 +19,9 @@ final class MotionInfoViewController: UITableViewController {
 
     // TODO Make this configurable via UI
     var side : Hand = .right
-    //let ip = "10.18.0.46"
-    let ip = "192.168.2.101"
+    //let ip = "134.106.54.96"
+    //let ip = "192.168.2.101"
+    let ip = "10.17.13.248"
 
     fileprivate let resetErrorSynchronizer = DispatchQueue(label: "de.offis.cocomuni.reset-error-sync")
     var resetError_Value = false
@@ -120,11 +121,6 @@ final class MotionInfoViewController: UITableViewController {
 
             var acceleration = Vector(deviceMotion!.userAcceleration)
 
-            if let previousA = previousAcceleration,
-                acceleration.rounded(decimals: 10) == previousA.rounded(decimals: 10) {
-                return
-            }
-
             if self.resetError {
                 self.confidence = 1.0
                 distance = Distance(0.0)
@@ -165,18 +161,25 @@ final class MotionInfoViewController: UITableViewController {
     fileprivate func publish(distance : Distance) {
         guard let publisher = self.publisher else { return }
 
-        let msgData = distance.msgpackValue(self.confidence)
+        let topic = "\(self.accelerometerDataTopic).\(self.side)"
+
+        let msgData = MessagePackValue([
+            "topic": MessagePackValue(topic),
+            "side": MessagePackValue(self.side.rawValue),
+            "confidence": MessagePackValue(confidence),
+            "timestamp": MessagePackValue(Timestamp),
+            "distance": distance.msgpackValue()
+        ])
+
         let data = pack(msgData)
 
-        try! publisher.send(string: "\(self.accelerometerDataTopic).\(self.side)", options: .sendMore)
+        try! publisher.send(string: topic, options: .sendMore)
         try! publisher.send(data: data)
 
-        // TODO This is linear now (and dummy too), but it has to be quadratic
-        if self.confidence - 0.001 < 0 {
-            self.confidence = 0
-        } else {
-            self.confidence -= 0.001
-        }
+        // TODO Wrong error function
+        let newConfidence = self.confidence - 0.001
+
+        self.confidence = max(0, newConfidence)
     }
     
     /// CoreMotion manager instance we receive updates from.

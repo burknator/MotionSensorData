@@ -169,22 +169,18 @@ extension Vector {
         return copy
     }
 
-    func msgpackValue(_ confidence : Double) -> MessagePackValue {
+    func msgpackValue() -> MessagePackValue {
         return MessagePackValue([
-            "confidence": MessagePackValue(confidence),
-            "timestamp": MessagePackValue(Timestamp),
-            "distance": [
-                MessagePackValue(self.x),
-                MessagePackValue(self.y),
-                MessagePackValue(self.z)
-            ]
+            MessagePackValue(self.x),
+            MessagePackValue(self.y),
+            MessagePackValue(self.z)
         ])
     }
 }
 
 typealias Distance = Vector
 
-fileprivate var Timestamp: String {
+var Timestamp: String {
     return "\(NSDate().timeIntervalSince1970 * 1000)"
 }
 
